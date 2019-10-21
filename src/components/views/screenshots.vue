@@ -195,7 +195,7 @@
         this.tableDatak();
         console.log("node值", this.$refs.tree.getCheckedNodes());
         var nodes = this.$refs.tree.getCheckedNodes();
-        if (nodes.length == 1) {
+        if (nodes.length == 0) {
           this.$Notice.error({
             title: "请选择摄像机"
           });
