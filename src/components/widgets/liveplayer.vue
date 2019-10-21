@@ -178,7 +178,7 @@
           this.h5handler = new H5sPlayerWS(conf);
         }
         this.h5handler.connect();
-        this.DoManualRecordStart();
+        // this.DoManualRecordStart();
       },
       CloseVideo(event) {
         var $container = $("#" + this.h5id);

@@ -24,6 +24,7 @@ import './assets/material/js/jquery.slimscroll'
 import './assets/material/js/waves'
 import './assets/material/js/custom.min'
 import './assets/plugins/bower_components/styleswitcher/jQuery.style.switcher'
+
 import axios from '@/http'
 import store from '@/store/store'
 import VeeValidate from 'vee-validate'

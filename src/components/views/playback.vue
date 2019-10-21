@@ -85,12 +85,11 @@
           <el-table-column
             width=310px>
             <template slot-scope="scope">
+              <el-button size="mini" style="font-size: 18px;" icon="el-icon-caret-right" circle
+                         @click="playVideo(scope.$index, scope.row)"></el-button>
               <el-button
                 size="mini"
                 type="success"><a :href="scope.row.url" :download="scope.row.urlto">下载</a></el-button>
-              <el-button size="mini" style="font-size: 25px;" icon="el-icon-caret-right" circle
-                         @click="Refresh1(scope.$index, scope.row)" data-toggle="modal"
-                         data-target="#myModal"></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -105,57 +104,32 @@
         </el-pagination>
       </div>
     </div>
-    <!-- bootstrap模态框1 -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="Close()">
-              &times;
-            </button>
-            <h4 class="modal-title" id="myModalLabel">
-              视频回放
-            </h4>
-            <!-- 开始结束时间 -->
-            <div class="kai">
-              <span>开始时间:{{rowstarf}}</span>
-              <span>结束时间:{{rowend}}</span>
-            </div>
-          </div>
-          <div class="modal-body text-center">
-            <video class="videoo" id="pbplayarch"></video>
-            <div class="block">
-              <el-slider v-model="timelink" :max="max" @change="timelinn(timelink)" :show-tooltip="false"></el-slider>
-            </div>
-            <!-- <el-button style="font-size: 25px;" :icon="icon" size="mini" circle  @click="resume()" class="strart"></el-button> -->
-            <i style="font-size: 30px; margin: 0 20px;" :class="icon" @click="resume()" class="strart"></i>
-            <!-- 倍速 -->
-            <el-select v-model="region" size="mini" style="width:70px" @change="Speed()">
-              <el-option label="0.5" value="0.5"></el-option>
-              <el-option label="1.0" value="1.0"></el-option>
-              <el-option label="2.0" value="2.0"></el-option>
-              <el-option label="4.0" value="4.0"></el-option>
-              <el-option label="8.0" value="8.0"></el-option>
-              <el-option label="16.0" value="16.0"></el-option>
-            </el-select>
-            <!-- 实时时间 -->
-            <span>{{displayc}}</span>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal -->
-    </div>
+
+    <el-dialog
+      title="视频回放"
+      :visible.sync="dialogVisible"
+      @opened="initForm"
+      width="30%">
+      <div id="ckplayerVideo"></div>
+      <!-- 开始结束时间 -->
+      <div class="kai">
+        <span>开始时间:{{rowstarf}}</span>
+        <span>结束时间:{{rowend}}</span>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 <script>
   import '../../assets/adapter.js'
-  import {H5sPlayerWS, H5sPlayerHls, H5sPlayerRTC} from '../../assets/h5splayer.js'
-  import {H5siOS, H5sPlayerCreate} from '../../assets/h5splayerhelper.js'
 
   export default {
 
     name: "playback",
     data() {
       return {
+        videoUrl: '',
+        dialogVisible: false,
         timelink: 0,//滑块
         max: 0,//滑块最大值
         value: [new Date(new Date().getTime() - 3600 * 1000 * 1), new Date()],
@@ -222,22 +196,19 @@
       this.loadtest();
     },
     methods: {
-      PlaybackCB(event, userdata) {
-        console.log("Playback callback ", event, userdata);
-
-        var msgevent = JSON.parse(event);
-        if (msgevent.type === 'H5S_EVENT_PB_TIME') {
-          this.displayc = msgevent.pbTime.strTime;
-          var starf = new Date(this.rowstarf).getTime() / 1000;
-          var endd = new Date(msgevent.pbTime.strTime).getTime() / 1000;
-          var staefend = endd - starf;
-          this.timelink = staefend;
-        }
-
+      initForm() {
+        var videoObject = {
+          container: '#ckplayerVideo',  // 容器的ID或className
+          autoplay: true,   // 是否自动播放
+          volume: 0, // 音量
+          video: this.videoUrl
+        };
+        new ckplayer(videoObject);
       },
       //播放
-      Refresh1(index, row) {
+      playVideo(index, row) {
         console.log(index, row);
+        this.dialogVisible = true;
         this.rowstarf = row.starf;
         this.rowend = row.end;
         var root = process.env.API_ROOT;
@@ -248,67 +219,7 @@
         if (wsroot == undefined) {
           wsroot = window.location.host;
         }
-        var pbconf1 = {
-          begintime: row.starf,
-          endtime: row.end,
-          // begintime:"2019-09-03T102653+08",
-          // endtime:"2019-09-03T104358+08",
-          showposter: 'true', //'true' or 'false' show poster
-          callback: this.PlaybackCB,
-          serverpb: 'true',
-          userdata: this // user data
-        };
-        console.log(pbconf1);
-        let conf = {
-          videoid: "pbplayarch",
-          protocol: window.location.protocol, //http: or https:
-          host: wsroot, //localhost:8080
-          rootpath: '/', // '/'
-          token: row.name,
-          pbconf: pbconf1, //This is optional, if no pbconf, this will be live.
-          hlsver: 'v1', //v1 is for ts, v2 is for fmp4
-          session: this.$store.state.token
-        };
-        var end = new Date(row.end).getTime();
-        var starf = new Date(row.starf).getTime();
-        var starfend = (end - starf) / 1000;//时间差
-        console.log(starfend);
-        this.max = starfend;
-        this.v1 = new H5sPlayerRTC(conf);
-        this.v1.connect();
-        setTimeout(function () {
-          this.v1.start();
-        }.bind(this), 500);
-      },
-      //开始
-      resume() {
-        var strart = this.icon;
-        console.log(strart);
-        if (strart == "mdi mdi-pause-circle fa-fw") {
-          this.icon = "mdi mdi-play-circle fa-fw";
-          this.v1.pause();
-        }
-        if (strart == "mdi mdi-play-circle fa-fw") {
-          this.icon = "mdi mdi-pause-circle fa-fw";
-          this.v1.resume();
-        }
-      },
-      timelinn(timelink) {
-        console.log(timelink);
-        this.v1.seek(timelink);
-      },
-      //倍速
-      Speed() {
-        console.log(this.region);
-        this.v1.speed(this.region);
-      },
-      //关闭
-      Close() {
-        if (this.v1 != undefined) {
-          this.v1.disconnect();
-          delete this.v1;
-          this.v1 = undefined;
-        }
+        this.videoUrl = root + row.url;
       },
       // 表格归档 下载 刷新
       //按钮搜索
@@ -489,7 +400,6 @@
           }
         })
       },
-
       loadDevice() {
         let _this = this;
         var root = process.env.API_ROOT;
@@ -519,7 +429,6 @@
           }
         })
       },
-
       //数字仓机
       NumberDevice() {
         let _this = this;
@@ -550,7 +459,6 @@
         })
       },
       NumberSrc(srclevel, srcData) {
-
         let _this = this;
         var root = process.env.API_ROOT;
         var wsroot = process.env.WS_HOST_ROOT;
@@ -592,7 +500,6 @@
           console.log('GetSrc failed', error);
         });
       },
-
       //模糊查询
       filterNode(value, data) {
         if (!value) return true;
@@ -611,10 +518,6 @@
 <style scoped>
   a {
     color: #FFFFFF;
-  }
-
-  .videoo {
-    width: 100%
   }
 
   .kai {
