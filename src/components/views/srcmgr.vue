@@ -20,6 +20,14 @@
           <el-button icon="el-icon-delete" type="info" @click="delSrc('multiple')">
             删除
           </el-button>
+          <!-- 导入Excel文件 -->
+          <div style="float: right;">
+            <input type="file" @change="importf"
+                   accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/>
+            <el-button style="margin-top: 1px;"
+                       size="mini" type="info" @click="downTemplate">下载模板
+            </el-button>
+          </div>
         </div>
         <!-- 有按钮 -->
         <el-table
@@ -151,6 +159,7 @@
         pageSize: 10,//一页数量
         tableData1: [],
         data: [],
+        excelData: [],
         //表单
         ruleForm: {
           name: '',
@@ -179,6 +188,105 @@
       this.loadSrc();
     },
     methods: {
+      // 模板
+      downTemplate() {
+        let _this = this;
+        var root = process.env.API_ROOT;
+        if (root == undefined) {
+          root = window.location.protocol + '//' + window.location.host + window.location.pathname;
+        }
+        let a = document.createElement('a')
+        a.href = root + '/mediastore/src_template.xlsx'
+        a.click();
+      },
+      // 导入excel文件
+      importf() {
+        let _this = this;
+        this.file = event.currentTarget.files[0];
+        var rABS = false; //是否将文件读取为二进制字符串
+        var file = this.file;
+        _this.excelData = [];
+        FileReader.prototype.readAsBinaryString = function (f) {
+          var binary = "";
+          var rABS = false; //是否将文件读取为二进制字符串
+          var pt = this;
+          var workbook; //读取完成的数据
+          // var excelData;
+          var reader = new FileReader();
+          reader.onprogress = function (e) {
+            let total = file.size;
+            _this.progress = (e.loaded / total) * 100;
+            console.log(_this.progress);
+          };
+          reader.onload = function (e) {
+            try {
+              var bytes = new Uint8Array(reader.result);
+              var length = bytes.byteLength;
+              for (var i = 0; i < length; i++) {
+                binary += String.fromCharCode(bytes[i]);
+              }
+              if (rABS) {
+                workbook = XLSX.read(btoa(fixdata(binary)), { //手动转化
+                  type: 'base64'
+                });
+              } else {
+                workbook = XLSX.read(binary, {
+                  type: 'binary'
+                });
+              }
+              // excelData = [];
+            } catch (e) {
+              console.log('文件类型不正确');
+              return;
+            }
+            var fromTo = '';
+            for (var sheet in workbook.Sheets) {
+              if (workbook.Sheets.hasOwnProperty(sheet)) {
+                fromTo = workbook.Sheets[sheet]['!ref'];
+                _this.excelData = _this.excelData.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+              }
+            }
+            if (_this.excelData.length != 0) {
+              console.log(_this.excelData);
+              _this.$confirm('是否导入' + _this.excelData.length + '条数据？')
+                .then(_ => {
+                  _this.importExcelData(_this.excelData);
+                });
+            }
+          };
+          reader.readAsArrayBuffer(f);
+        }
+
+        var reader = new FileReader();
+        if (rABS) {
+          reader.readAsArrayBuffer(file);
+        } else {
+          reader.readAsBinaryString(file);
+        }
+      },
+      // 导入数据
+      importExcelData(data) {
+        let _this = this;
+        var root = process.env.API_ROOT;
+        if (root == undefined) {
+          root = window.location.protocol + '//' + window.location.host + window.location.pathname;
+        }
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].name && data[i].user && data[i].password && data[i].rtspURL) {
+            let url = root + "/api/v1/AddSrcRTSP?name=" + data[i].name + "&token=" + this.$uuid.v1() + "&user=" + data[i].user + "&password=" + data[i].password + "&url=" + data[i].rtspURL + "&session=" + this.$store.state.token;
+            $.ajax({
+              type: "GET",
+              url: url,
+              async: false,
+              dataType: "json"
+            })
+          }
+        }
+        _this.$Notice.info({
+          title: '成功导入' + data.length + '条记录！'
+        })
+        _this.loadSrc();
+      },
       handleSelectionChange(val) {
         this.multipleSelection = val;
       },
@@ -187,12 +295,8 @@
         let _this = this;
         _this.tableDatak();
         var root = process.env.API_ROOT;
-        var wsroot = process.env.WS_HOST_ROOT;
         if (root == undefined) {
           root = window.location.protocol + '//' + window.location.host + window.location.pathname;
-        }
-        if (wsroot == undefined) {
-          wsroot = window.location.host;
         }
         //url
         var url = root + "/api/v1/GetSrcWithoutDevice?session=" + this.$store.state.token;
@@ -219,12 +323,8 @@
       addSrc(data) {
         let _this = this;
         var root = process.env.API_ROOT;
-        var wsroot = process.env.WS_HOST_ROOT;
         if (root == undefined) {
           root = window.location.protocol + '//' + window.location.host + window.location.pathname;
-        }
-        if (wsroot == undefined) {
-          wsroot = window.location.host;
         }
         let url = root + "/api/v1/AddSrcRTSP?name=" + data.name + "&token=" + this.$uuid.v1() + "&user=" + data.user + "&password=" + data.password + "&url=" + data.rtspURL + "&session=" + this.$store.state.token;
         this.$http.get(url).then(result => {
@@ -264,12 +364,8 @@
       deleteSrc(type, token) {
         let _this = this;
         var root = process.env.API_ROOT;
-        var wsroot = process.env.WS_HOST_ROOT;
         if (root == undefined) {
           root = window.location.protocol + '//' + window.location.host + window.location.pathname;
-        }
-        if (wsroot == undefined) {
-          wsroot = window.location.host;
         }
         if (type == 'multiple') {
           for (let i = 0; i < token.length; i++) {

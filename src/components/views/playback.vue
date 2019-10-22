@@ -9,6 +9,7 @@
           v-model="filterText">
         </el-input>
         <el-tree
+          style="max-height: 700px;overflow: auto;"
           :data="data"
           show-checkbox
           default-expand-all
@@ -74,13 +75,13 @@
               <span>{{ scope.row.end }}</span>
             </template>
           </el-table-column>
-          <el-table-column
-            prop="end"
-            label="type">
-            <template slot-scope="scope">
-              <span>{{ scope.row.type }}</span>
-            </template>
-          </el-table-column>
+          <!--<el-table-column-->
+          <!--prop="end"-->
+          <!--label="type">-->
+          <!--<template slot-scope="scope">-->
+          <!--<span>{{ scope.row.type }}</span>-->
+          <!--</template>-->
+          <!--</el-table-column>-->
           <el-table-column
             width=310px>
             <template slot-scope="scope">

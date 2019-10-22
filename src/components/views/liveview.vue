@@ -8,6 +8,7 @@
         v-model="filterText">
       </el-input>
       <el-tree
+        style="max-height: 700px;overflow: auto;"
         :data="data"
         accordion
         default-expand-all

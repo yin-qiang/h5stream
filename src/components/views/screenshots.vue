@@ -10,6 +10,7 @@
         </el-input>
         <!-- 这是原下拉框代码 -->
         <el-tree
+          style="max-height: 700px;overflow: auto;"
           :data="data"
           show-checkbox
           default-expand-all
