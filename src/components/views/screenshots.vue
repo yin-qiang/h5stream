@@ -88,7 +88,7 @@
         </el-pagination>
       </div>
     </div>
-    <!-- bootstrap模态框1 -->
+    <!-- 预览模态框 -->
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -97,7 +97,7 @@
               &times;
             </button>
             <h4 class="modal-title" id="myModalLabel">
-              图片
+              预览
             </h4>
             <!-- 开始结束时间 -->
             <div class="kai">

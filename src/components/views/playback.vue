@@ -8,7 +8,6 @@
           placeholder="输入关键字进行过滤"
           v-model="filterText">
         </el-input>
-        <!-- 这是原下拉框代码 -->
         <el-tree
           :data="data"
           show-checkbox
@@ -106,7 +105,7 @@
     </div>
 
     <el-dialog
-      title="视频回放"
+      title="回放"
       :visible.sync="dialogVisible"
       @opened="initForm"
       width="30%">
@@ -289,7 +288,6 @@
                   _this.tableData1.push(timeitem);
                 }
                 _this.total = _this.tableData1.length;
-                console.log("length", _this.total)
               }
             },
             error: function (error) {
@@ -525,5 +523,4 @@
     justify-content: space-between;
     margin-top: 20px;
   }
-
 </style>

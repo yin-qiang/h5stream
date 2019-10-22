@@ -76,7 +76,7 @@ if (window.localStorage.getItem('h5rtcsw')) {
 }
 
 const Router = new VueRouter({
-  routes
+  routes: routes
 });
 
 Router.beforeEach((to, from, next) => {

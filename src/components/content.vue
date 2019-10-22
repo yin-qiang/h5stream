@@ -1,17 +1,20 @@
 <template>
   <div class="content">
-    <router-view></router-view>
+    <router-view :key="$store.state.activeDate"></router-view>
   </div>
 </template>
 
 <script>
   export default {
-    name: 'v-content'
+    name: 'v-content',
+    data() {
+      return {}
+    },
+    methods: {}
   }
 </script>
 <style scoped>
   .content {
-    padding: 70px 10px 10px;
+    padding: 50px 10px 10px;
   }
 </style>
-

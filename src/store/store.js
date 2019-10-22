@@ -1,23 +1,23 @@
-
 import Vuex from 'vuex'
 import Vue from 'vue'
 import * as types from './types'
 
 Vue.use(Vuex)
+
 export default new Vuex.Store({
   state: {
     user: {},
     token: null,
     title: '',
     lang: 'en',
-    rtc:"",
+    rtc: '',
+    activeDate: 1
   },
   mutations: {
     [types.RTCSW]: (state, data) => {
-      localStorage.h5rtcsw= data
-      state.rtc=data
+      localStorage.h5rtcsw = data
+      state.rtc = data
     },
-    //..
     [types.LOGIN]: (state, data) => {
       localStorage.h5stoken = data
       state.token = data

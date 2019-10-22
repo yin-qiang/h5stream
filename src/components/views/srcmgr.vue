@@ -13,13 +13,23 @@
         </div>
         <div style="margin-bottom: 10px;">
           <!-- 添加按钮 -->
-          <el-button icon="el-icon-plus" @click="dialogVisible = true">添加
+          <el-button icon="el-icon-plus" @click="dialogVisible = true">
+            添加
+          </el-button>
+          <!-- 添加按钮 -->
+          <el-button icon="el-icon-delete" type="info" @click="delSrc('multiple')">
+            删除
           </el-button>
         </div>
         <!-- 有按钮 -->
         <el-table
+          @selection-change="handleSelectionChange"
           :data="tableData1.slice((currentPage-1)*pageSize,currentPage*pageSize)"
           style="width: 100%;">
+          <el-table-column
+            type="selection"
+            width="55">
+          </el-table-column>
           <el-table-column
             prop="name"
             label="名称">
@@ -144,7 +154,6 @@
         //表单
         ruleForm: {
           name: '',
-          token: this.$uuid.v1(),
           user: 'admin',
           password: 'Gt123456',
           rtspURL: 'rtsp://192.168.2.3:554/h265/ch1/main/av_stream'
@@ -162,13 +171,17 @@
           rtspURL: [
             {validator: validator, trigger: 'blur'}
           ]
-        }
+        },
+        multipleSelection: []
       }
     },
     mounted() {
       this.loadSrc();
     },
     methods: {
+      handleSelectionChange(val) {
+        this.multipleSelection = val;
+      },
       // 加载资源
       loadSrc() {
         let _this = this;
@@ -213,14 +226,11 @@
         if (wsroot == undefined) {
           wsroot = window.location.host;
         }
-        // let name = 'addTest';
-        // let token = 'addTest';
-        // let rtspURL = 'rtsp://192.168.2.3:554/h265/ch1/main/av_stream';
-        let url = root + "/api/v1/AddSrcRTSP?name=" + data.name + "&token=" + data.token + "&user=" + data.user + "&password=" + data.password + "&url=" + data.rtspURL + "&session=" + this.$store.state.token;
+        let url = root + "/api/v1/AddSrcRTSP?name=" + data.name + "&token=" + this.$uuid.v1() + "&user=" + data.user + "&password=" + data.password + "&url=" + data.rtspURL + "&session=" + this.$store.state.token;
         this.$http.get(url).then(result => {
           if (result.status == 200) {
             _this.$Notice.info({
-              title: name + " AddSrcRTSP successfully "
+              title: " AddSrc successfully "
             })
             _this.resetForm('ruleForm')
             _this.dialogVisible = false;
@@ -233,28 +243,58 @@
       // 删除资源
       delSrc(index, row) {
         let _this = this;
-        _this.$confirm('确认删除？')
-          .then(_ => {
-            var root = process.env.API_ROOT;
-            var wsroot = process.env.WS_HOST_ROOT;
-            if (root == undefined) {
-              root = window.location.protocol + '//' + window.location.host + window.location.pathname;
-            }
-            if (wsroot == undefined) {
-              wsroot = window.location.host;
-            }
-            let url = root + "/api/v1/delSrc?token=" + row.token + "&session=" + this.$store.state.token;
-            this.$http.get(url).then(result => {
-              if (result.status == 200) {
-                _this.$Notice.info({
-                  title: row.token + " DeleteSrc successfully "
-                })
-                _this.loadSrc();
-              }
+        if (index == 'multiple') {
+          if (_this.multipleSelection.length == 0) {
+            _this.$Notice.info({
+              title: " 请至少选择一条数据 "
             })
+            return;
+          }
+          this.$confirm('确认删除' + _this.multipleSelection.length + '条数据吗？')
+            .then(_ => {
+              _this.deleteSrc('multiple', _this.multipleSelection);
+            });
+        } else {
+          _this.$confirm('确认删除该数据？')
+            .then(_ => {
+              _this.deleteSrc('', row.token);
+            });
+        }
+      },
+      deleteSrc(type, token) {
+        let _this = this;
+        var root = process.env.API_ROOT;
+        var wsroot = process.env.WS_HOST_ROOT;
+        if (root == undefined) {
+          root = window.location.protocol + '//' + window.location.host + window.location.pathname;
+        }
+        if (wsroot == undefined) {
+          wsroot = window.location.host;
+        }
+        if (type == 'multiple') {
+          for (let i = 0; i < token.length; i++) {
+            $.ajax({
+              type: "GET",
+              url: root + "/api/v1/delSrc?token=" + token[i].token + "&session=" + this.$store.state.token,
+              async: false,
+              dataType: "json"
+            })
+          }
+          _this.$Notice.info({
+            title: " DeleteSrc successfully "
           })
-          .catch(_ => {
-          });
+          _this.loadSrc();
+        } else {
+          let url = root + "/api/v1/delSrc?token=" + token + "&session=" + this.$store.state.token;
+          this.$http.get(url).then(result => {
+            if (result.status == 200) {
+              _this.$Notice.info({
+                title: " DeleteSrc successfully "
+              })
+              _this.loadSrc();
+            }
+          })
+        }
       },
       liveview(index, row) {
         let _this = this;
