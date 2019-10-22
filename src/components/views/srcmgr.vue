@@ -21,11 +21,11 @@
             删除
           </el-button>
           <!-- 导入Excel文件 -->
-          <div style="float: right;">
+          <div style="float: right;display:flex;align-items:center;justify-content:center;">
             <input type="file" @change="importf"
                    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/>
-            <el-button style="margin-top: 1px;"
-                       size="mini" type="info" @click="downTemplate">下载模板
+            <el-button
+              size="mini" type="info" @click="downTemplate">下载模板
             </el-button>
           </div>
         </div>
