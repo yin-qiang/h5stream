@@ -17,8 +17,12 @@
             添加
           </el-button>
           <!-- 添加按钮 -->
-          <el-button icon="el-icon-delete" type="info" @click="delSrc('multiple')">
+          <el-button icon="el-icon-delete" @click="delSrc('multiple')">
             删除
+          </el-button>
+          <!-- 导出按钮 -->
+          <el-button icon="el-icon-tickets" @click="exportSrc">
+            导出
           </el-button>
           <!-- 导入Excel文件 -->
           <div style="float: right;display:flex;align-items:center;justify-content:center;">
@@ -46,10 +50,24 @@
             </template>
           </el-table-column>
           <el-table-column
-            prop="token"
-            label="token">
+            prop="user"
+            label="user">
             <template slot-scope="scope">
-              <span style="margin-left: 10px">{{ scope.row.token }}</span>
+              <span style="margin-left: 10px">{{ scope.row.user }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="password"
+            label="password">
+            <template slot-scope="scope">
+              <span style="margin-left: 10px">{{ scope.row.password }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="rtspURL"
+            label="rtspURL">
+            <template slot-scope="scope">
+              <span style="margin-left: 10px">{{ scope.row.rtspURL }}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -60,7 +78,7 @@
                          @click="liveview(scope.$index, scope.row)"></el-button>
               <el-button
                 size="mini"
-                type="info" @click="delSrc(scope.$index, scope.row)">删除
+                type="danger" round @click="delSrc(scope.$index, scope.row)">删除
               </el-button>
             </template>
           </el-table-column>
@@ -188,6 +206,20 @@
       this.loadSrc();
     },
     methods: {
+      exportSrc() {
+        // 导出表格
+        require.ensure([], () => {
+          const {export_json_to_excel} = require("../../../static/sheetjs/Export2Excel");
+          const tHeader = ["name", "user", "password", "rtspURL"];// 上面设置Excel的表格第一行的标题
+          const filterVal = ["name", "user", "password", "rtspURL"]; // 上面的index、nickName、name是tableData里对象的属性
+          const list = this.tableData1;              //把data里的tableData存到list
+          const data = this.formatJson(filterVal, list);
+          export_json_to_excel(tHeader, data, "摄像机数据源");   //标题，数据，文件名
+        });
+      },
+      formatJson(filterVal, jsonData) {
+        return jsonData.map(v => filterVal.map(j => v[j]));
+      },
       // 模板
       downTemplate() {
         let _this = this;
@@ -306,11 +338,12 @@
               var data = result.data;
               for (var i = 0; i < data.src.length; i++) {
                 var item = data.src[i];
-                var token = item['strToken'];
-                var strName = item['strName'];
                 _this.tableData1.push({
-                  name: strName,
-                  token: token
+                  name: item['strName'],
+                  user: item['strUser'],
+                  password: item['strPasswd'],
+                  rtspURL: item['strUrl'],
+                  token: item['strToken']
                 });
               }
               _this.data = _this.tableData1;

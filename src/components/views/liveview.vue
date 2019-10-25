@@ -97,7 +97,7 @@
     },
     mounted() {
       this.updateUI();
-      this.loadDevice();
+      // this.loadDevice();
       this.loadtest();
       this.NumberDevice();
     },
