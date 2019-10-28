@@ -63,7 +63,7 @@
   import Vue from 'vue'
   import 'patternfly-bootstrap-treeview/dist/bootstrap-treeview.min.css'
   import 'patternfly-bootstrap-treeview/dist/bootstrap-treeview.min.js'
-  import Liveplayer from '../../components/widgets/liveplayer'
+  import Liveplayer from './liveplayer'
 
   export default {
     name: "liveview",

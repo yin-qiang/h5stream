@@ -151,7 +151,7 @@
   import '../../assets/material/js/custom.min.js'
   import '../../assets/adapter.js'
   import '../../assets/h5splayer.js'
-  import Liveplayer from '../../components/widgets/liveplayer'
+  import Liveplayer from './liveplayer'
 
   export default {
     name: "srcmgr",

@@ -326,11 +326,11 @@
 
         this.$http.get(url).then(result => {
           console.log(result);
-          // if (result.status == 200) {
-          //   this.$Notice.info({
-          //     title: "Manual Start Record successfully"
-          //   })
-          // }
+          if (result.status == 200) {
+            this.$Notice.info({
+              title: "Manual Start Record successfully"
+            })
+          }
         }).catch(error => {
           console.log('Record failed!', error);
           // this.$Notice.info({
