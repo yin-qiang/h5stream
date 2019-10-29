@@ -191,7 +191,7 @@
       }
     },
     mounted() {
-      this.loadDevice();
+      // this.loadDevice();
       this.NumberDevice();
       this.loadtest();
     },

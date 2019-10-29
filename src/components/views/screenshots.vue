@@ -180,7 +180,7 @@
       }
     },
     mounted() {
-      this.loadDevice();
+      // this.loadDevice();
       this.loadtest();
       this.NumberDevice();
     },
